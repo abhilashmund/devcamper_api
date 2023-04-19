@@ -117,7 +117,7 @@ BootcampSchema.pre('save', async function (next) {
         city: loc[0].city,
         state: loc[0].state,
         zipcode: loc[0].zipcode,
-        country: loc[0].country
+        country: loc[0].countryCode
     }
 
     // Don't save address in DB
