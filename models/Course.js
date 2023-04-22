@@ -38,4 +38,11 @@ const CourseSchema = new mongoose.Schema({
     }
 });
 
+// Cascade delete courses when a bootamp is deleted
+CourseSchema.pre('remove', async function (next) {
+    console.log(`Courses being removed ${this._id}`);
+    await this.model.findByIdAndDelete(this._id);
+    next();
+});
+
 module.exports = mongoose.model('Course', CourseSchema);
