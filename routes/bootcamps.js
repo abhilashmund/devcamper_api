@@ -1,35 +1,44 @@
-/**
- * This has all the routes for bootcamps
- */
 const express = require('express');
 const {
-    getBootcamps,
-    getBootcamp,
-    createBootcamp,
-    updateBootcamp,
-    deleteBootcamp,
-    getBootcampsInRadius
+  getBootcamps,
+  getBootcamp,
+  createBootcamp,
+  updateBootcamp,
+  deleteBootcamp,
+  getBootcampsInRadius,
+  bootcampPhotoUpload
 } = require('../controllers/bootcamps');
+
+const Bootcamp = require('../models/Bootcamp');
 
 // Include other resource routers
 const courseRouter = require('./courses');
+const reviewRouter = require('./reviews');
 
 const router = express.Router();
 
-// Re-raute into other resource routers
-router.use('/:bootcampId/courses', courseRouter);
+const advancedResults = require('../middleware/advancedResults');
+const { protect, authorize } = require('../middleware/auth');
 
-// This makes a get request to getBootcampsInRadius
+// Re-route into other resource routers
+router.use('/:bootcampId/courses', courseRouter);
+router.use('/:bootcampId/reviews', reviewRouter);
+
 router.route('/radius/:zipcode/:distance').get(getBootcampsInRadius);
 
-// This route makes get or post requests
-router.route('/').get(getBootcamps).post(createBootcamp);
-
-// This route makes get, put or delete requests
 router
-    .route('/:id')
-    .get(getBootcamp)
-    .put(updateBootcamp)
-    .delete(deleteBootcamp);
+  .route('/:id/photo')
+  .put(protect, authorize('publisher', 'admin'), bootcampPhotoUpload);
+
+router
+  .route('/')
+  .get(advancedResults(Bootcamp, 'courses'), getBootcamps)
+  .post(protect, authorize('publisher', 'admin'), createBootcamp);
+
+router
+  .route('/:id')
+  .get(getBootcamp)
+  .put(protect, authorize('publisher', 'admin'), updateBootcamp)
+  .delete(protect, authorize('publisher', 'admin'), deleteBootcamp);
 
 module.exports = router;
